@@ -37,3 +37,5 @@ click run_demo.exe
 2. `control`: start, stop and save. 
    press `save` button to save infrared and visible images. press `record` button to save infrared image sequence  
 3. the .raw file can be read using `readraw.m`, which is matlab code  
+
+![software](./software.png)
