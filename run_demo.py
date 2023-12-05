@@ -17,6 +17,7 @@ import threading
 import signal
 from concurrent.futures import ThreadPoolExecutor
 import numpy as np
+import time
 
 class MyMainForm(QMainWindow, Ui_Form):
     def __init__(self, parent=None):
@@ -44,6 +45,9 @@ class MyMainForm(QMainWindow, Ui_Form):
         self.focusing = False
         self.focus_count = 0
         self.FOCUS_STEP = 8
+        
+        self.frame_delay = -1
+        self.frame_delay_const = 1
 
         self.recording = False
         self.record_list = []
@@ -84,14 +88,25 @@ class MyMainForm(QMainWindow, Ui_Form):
             -probesize 500000 -flags low_delay -vf setpts=0"
             
         self.pid1 = subprocess.Popen(command)
-        
+    
+    def accurate_delay(self, delay):
+        _ = time.perf_counter() + delay/1000
+        while time.perf_counter() < _:
+            pass
+    
     def start_vi_save(self, frame_num):
         command = f"ffmpeg -i rtsp://192.168.0.1/mjpg/ch1 -frames:v 1 -y \
             \"./images/my_vistream-{frame_num}.png\"" 
         subprocess.call(command)
         print('VI Image saved at ./images//my_vistream-' + str(frame_num) + '.jpg')
         self.write_to_textbrowser('VI Image saved at ./images//my_vistream-' + str(frame_num) + '.jpg')
-        
+    
+    def start_ir_save(self):
+        filename = self.image_save_path + '/my_irstream-%d.' % self.frame_num + self.MODE
+        self.image_result.Save(filename)
+        print('IR Image saved at %s' % filename)
+        self.write_to_textbrowser('IR Image saved at %s' % filename)
+        self.frame_num = self.frame_num + 1
     
     def set_node(self, node_name, value):
         node = PySpin.CEnumerationPtr(self.nodemap.GetNode(node_name))
@@ -110,7 +125,6 @@ class MyMainForm(QMainWindow, Ui_Form):
         node.SetIntValue(node_target_val.GetValue())
         # print(node_name + " is set as " + value)
         return True
-    
     
     def acquire_images(self):
         self.handle_focus() 
@@ -138,6 +152,12 @@ class MyMainForm(QMainWindow, Ui_Form):
                 self.scene.addItem(self.item)
                 self.graphicsView_1.setScene(self.scene)
                 
+                if self.frame_delay > 0:
+                    self.frame_delay = self.frame_delay - 1
+                elif self.frame_delay == 0:
+                    self.start_ir_save()
+                    self.frame_delay = -1
+                    
             self.image_result.Release()
 
         except PySpin.SpinnakerException as ex:
@@ -243,7 +263,10 @@ class MyMainForm(QMainWindow, Ui_Form):
             print("streaming is not started!")
             self.write_to_textbrowser("streaming is not started!")
             return
-        
+        if self.frame_delay > 0:
+            print("please wait for the saving process and try again!")
+            self.write_to_textbrowser("please wait for the saving process and try again!")
+            return
         self.setMask(self.pixmap_white.mask())
         image_data = np.ones([480, 640], dtype=np.uint8) * 255
         frame = QtGui.QImage(image_data, 640, 480, QtGui.QImage.Format_Grayscale8)
@@ -271,12 +294,12 @@ class MyMainForm(QMainWindow, Ui_Form):
             print("streaming is not started!")
             self.write_to_textbrowser("streaming is not started!")
             return
+        if self.frame_delay > 0:
+            print("press too quick! please wait for the previous frame to finish saving!")
+            self.write_to_textbrowser("press too quick! please wait for the previous frame to finish saving!")
+            return
         self.thread_pool.submit(self.start_vi_save, self.frame_num)
-        filename = self.image_save_path + '/my_irstream-%d.' % self.frame_num + self.MODE
-        self.image_result.Save(filename)
-        print('IR Image saved at %s' % filename)
-        self.write_to_textbrowser('IR Image saved at %s' % filename)
-        self.frame_num = self.frame_num + 1
+        self.frame_delay = self.frame_delay_const
     
     def save_record(self):
         path = self.video_save_path + str(self.record_index) + '/'
