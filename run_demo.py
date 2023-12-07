@@ -2,7 +2,7 @@
 import sys
 from PyQt5 import QtGui, QtCore
 from PyQt5.QtCore import QTimer
-from PyQt5.QtGui import QPalette, QColor, QPixmap, QBitmap
+from PyQt5.QtGui import QPalette, QColor, QPixmap, QBitmap, QIcon
 from PyQt5.QtWidgets import QMainWindow, QApplication, QGraphicsPixmapItem, QGraphicsScene
 
 from demo_ui import Ui_Form
@@ -31,6 +31,9 @@ class MyMainForm(QMainWindow, Ui_Form):
         path_mask2 = os.path.abspath(os.path.join(bundle_dir, 'white_mask.png'))
 
         apply_stylesheet(app, 'light_blue.xml', invert_secondary=True, extra=extra, css_file=path_css)
+        
+        path_ico = os.path.abspath(os.path.join(bundle_dir, 'my_demo.ico'))
+        self.setWindowIcon(QIcon(path_ico))
         
         self.pixmap_transparent = QPixmap(path_mask1)
         self.pixmap_white = QPixmap(path_mask2)

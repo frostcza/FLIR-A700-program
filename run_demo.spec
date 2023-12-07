@@ -8,7 +8,7 @@ a = Analysis(
     ['run_demo.py'],
     pathex=[],
     binaries=[],
-    datas=[('custom.css', '.'), ('mask.png', '.'), ('white_mask.png', '.')],
+    datas=[('custom.css', '.'), ('mask.png', '.'), ('white_mask.png', '.'), ('my_demo.ico', '.')],
     hiddenimports=['demo_ui.py'],
     hookspath=[],
     hooksconfig={},

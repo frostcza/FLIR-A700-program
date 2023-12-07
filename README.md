@@ -29,7 +29,7 @@ the default adress is rtsp://192.168.0.1/mjpg/ch1
 `python run_demo.py`  
 
 #### build exe
-`pyinstaller -F --add-data "custom.css;." --add-data "mask.png;." --add-data "white_mask.png;." run_demo.py --hidden-import demo_ui.py --icon=my_demo.ico`  
+`pyinstaller -F --add-data "custom.css;." --add-data "mask.png;." --add-data "white_mask.png;." --add-data "my_demo.ico;." run_demo.py --hidden-import demo_ui.py --icon=my_demo.ico`  
 click run_demo.exe
 
 ### other 
