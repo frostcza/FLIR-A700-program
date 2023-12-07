@@ -36,6 +36,6 @@ click run_demo.exe
 1. `IR format`: cannot change while streaming  
 2. `control`: start, stop and save. 
    press `save` button to save infrared and visible images. press `record` button to save infrared image sequence  
-3. the .raw file can be read using `readraw.m`, which is matlab code  
+3. the .raw file can be read using `readraw.m`, which is matlab code. Or use my [raw-reader](https://github.com/frostcza/raw-reader)  
 
 ![software](./software.png)
