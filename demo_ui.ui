@@ -258,7 +258,7 @@
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>jpg</string>
+    <string>png</string>
    </property>
    <property name="checked">
     <bool>true</bool>

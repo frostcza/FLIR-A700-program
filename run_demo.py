@@ -39,7 +39,7 @@ class MyMainForm(QMainWindow, Ui_Form):
         self.pixmap_white = QPixmap(path_mask2)
         
         self.streaming = False
-        self.MODE = 'jpg'
+        self.MODE = 'png'
         self.image_save_path = './images/'
         if not os.path.exists(self.image_save_path):
             os.makedirs(self.image_save_path)
@@ -61,7 +61,7 @@ class MyMainForm(QMainWindow, Ui_Form):
 
         self.thread_pool = ThreadPoolExecutor(max_workers=5)
 
-        self.radioButton_1.clicked.connect(self.format_jpg)
+        self.radioButton_1.clicked.connect(self.format_png)
         self.radioButton_2.clicked.connect(self.format_raw)
         
         self.pushButton_1.clicked.connect(self.control_start)
@@ -101,11 +101,11 @@ class MyMainForm(QMainWindow, Ui_Form):
         command = f"ffmpeg -i rtsp://192.168.0.1/mjpg/ch1 -frames:v 1 -y \
             \"./images/my_vistream-{frame_num}.png\"" 
         subprocess.call(command)
-        print('VI Image saved at ./images//my_vistream-' + str(frame_num) + '.jpg')
-        self.write_to_textbrowser('VI Image saved at ./images//my_vistream-' + str(frame_num) + '.jpg')
+        print('VI Image saved at ./images/my_vistream-' + str(frame_num) + '.png')
+        self.write_to_textbrowser('VI Image saved at ./images/my_vistream-' + str(frame_num) + '.png')
     
     def start_ir_save(self):
-        filename = self.image_save_path + '/my_irstream-%d.' % self.frame_num + self.MODE
+        filename = self.image_save_path + 'my_irstream-%d.' % self.frame_num + self.MODE
         self.image_result.Save(filename)
         print('IR Image saved at %s' % filename)
         self.write_to_textbrowser('IR Image saved at %s' % filename)
@@ -138,7 +138,7 @@ class MyMainForm(QMainWindow, Ui_Form):
                 self.write_to_textbrowser('Image incomplete with image status %d ...' % self.image_result.GetImageStatus())
             else:
                 if self.recording:
-                    if self.MODE == 'jpg':
+                    if self.MODE == 'png':
                         self.record_list.append(self.processor.Convert(self.image_result, PySpin.PixelFormat_Mono8))
                     elif self.MODE == 'raw':
                         self.record_list.append(self.processor.Convert(self.image_result, PySpin.PixelFormat_Mono16))
@@ -168,27 +168,27 @@ class MyMainForm(QMainWindow, Ui_Form):
             self.write_to_textbrowser('Error: %s' % ex)
             return False
     
-    def format_jpg(self):
+    def format_png(self):
         if self.streaming:
             print('can not set format while streaming!')
             self.write_to_textbrowser('can not set format while streaming!')
-            if self.MODE == 'jpg':
+            if self.MODE == 'png':
                 self.radioButton_1.setChecked(True)
             elif self.MODE == 'raw':
                 self.radioButton_2.setChecked(True)
             return
         else:
             if self.radioButton_1.isChecked():
-                self.MODE = 'jpg'
-                print('Image format is jpg')
-                self.write_to_textbrowser('Image format is jpg')
+                self.MODE = 'png'
+                print('Image format is png')
+                self.write_to_textbrowser('Image format is png')
             
     def format_raw(self):
         if self.streaming:
             print('can not set format while streaming!')
             self.write_to_textbrowser('can not set format while streaming!')
             
-            if self.MODE == 'jpg':
+            if self.MODE == 'png':
                 self.radioButton_1.setChecked(True)
             elif self.MODE == 'raw':
                 self.radioButton_2.setChecked(True)
@@ -243,7 +243,7 @@ class MyMainForm(QMainWindow, Ui_Form):
 
         if self.MODE == 'raw':
             self.set_node('PixelFormat', 'Mono16')
-        elif self.MODE == 'jpg':
+        elif self.MODE == 'png':
             self.set_node('PixelFormat', 'Mono8')
         
         self.setMask(self.pixmap_transparent.mask())

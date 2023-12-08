@@ -191,7 +191,7 @@ class Ui_Form(object):
         self.pushButton_3.setText(_translate("Form", "save"))
         self.pushButton_4.setText(_translate("Form", "exit"))
         self.radioButton_2.setText(_translate("Form", "raw"))
-        self.radioButton_1.setText(_translate("Form", "jpg"))
+        self.radioButton_1.setText(_translate("Form", "png"))
         self.label_5.setText(_translate("Form", "IR format"))
         self.label_6.setText(_translate("Form", "auto NUC"))
         self.pushButton_7.setText(_translate("Form", "on"))
