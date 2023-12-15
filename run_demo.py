@@ -45,9 +45,11 @@ class MyMainForm(QMainWindow, Ui_Form):
             os.makedirs(self.image_save_path)
         
         self.frame_num = 0
+        
         self.focusing = False
         self.focus_count = 0
-        self.FOCUS_STEP = 8
+        self.FOCUS_STEP = 5
+        self.distance = 1.0
         
         self.frame_delay = -1
         self.frame_delay_const = 1
@@ -349,6 +351,13 @@ class MyMainForm(QMainWindow, Ui_Form):
         app.quit()
         self.close()
         
+    def read_distance(self):
+        node = PySpin.CFloatPtr(self.nodemap.GetNode("FocusDistance"))
+        self.distance = node.GetValue()
+        print(self.distance)
+        self.write_to_textbrowser('done... now focus distance = ' + str(round(self.distance, 2)))
+        self.FOCUS_STEP = int(4.0 / self.distance) + 1
+    
     def handle_focus(self):
         if not self.focusing:
             return
@@ -358,13 +367,16 @@ class MyMainForm(QMainWindow, Ui_Form):
             self.set_node('FocusDirection', 'Stop')
             self.focus_count = 0
             self.focusing = False
-            print('done')
-            self.write_to_textbrowser('done')
-        
+            # print('done... ', end='')
+            # self.write_to_textbrowser('done')
+            self.read_distance()
+            
     def focus_further(self):
         if not self.streaming:
             print("streaming is not started!")
             self.write_to_textbrowser("streaming is not started!")
+            return
+        if self.distance > 15:
             return
         print('focus further...  ', end='')
         self.write_to_textbrowser('focus further...  ')
@@ -376,6 +388,8 @@ class MyMainForm(QMainWindow, Ui_Form):
         if not self.streaming:
             print("streaming is not started!")
             self.write_to_textbrowser("streaming is not started!")
+            return
+        if self.distance < 0.25:
             return
         print('focus closer...   ', end='')
         self.write_to_textbrowser('focus closer...   ')
