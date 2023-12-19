@@ -55,6 +55,8 @@ class MyMainForm(QMainWindow, Ui_Form):
         self.frame_delay_const = 1
 
         self.recording = False
+        self.record_count = 0
+        self.RECORD_FRAMES = 100
         self.record_list = []
         self.record_index = 1
         self.video_save_path = './video/'
@@ -133,6 +135,7 @@ class MyMainForm(QMainWindow, Ui_Form):
     
     def acquire_images(self):
         self.handle_focus() 
+        self.handle_record()
         try:
             self.image_result = self.cam.GetNextImage(1000)
             if self.image_result.IsIncomplete():
@@ -307,33 +310,62 @@ class MyMainForm(QMainWindow, Ui_Form):
         self.frame_delay = self.frame_delay_const
     
     def save_record(self):
-        path = self.video_save_path + str(self.record_index) + '/'
-        while os.path.exists(path):
-            self.record_index = self.record_index + 1
-            path = self.video_save_path + str(self.record_index) + '/'
-        if not os.path.exists(path):
-            os.makedirs(path)
-        frame_num = 0
+        frame_num = 1
         for i in range(len(self.record_list)):
-            filename = path + '/sequence-%d.' % frame_num + self.MODE
+            filename = self.video_ir_path + '/sequence-ir-%04d.' % frame_num + self.MODE
             self.record_list[i].Save(filename)
             frame_num = frame_num + 1
-        print('Image sequence of ' + str(len(self.record_list)) + ' saved at ' + path)
-        self.write_to_textbrowser('Image sequence of ' + str(len(self.record_list)) + ' saved at ' + path)
+        print('IR image sequence saved at ' + self.video_ir_path)
+        self.write_to_textbrowser('IR image sequence saved at ' + self.video_ir_path)
         self.record_index = self.record_index + 1
         self.record_list = []
+        
+        self.record_count = 0
+        self.pushButton_13.setText("record")
+    
+    def handle_record(self):
+        if not self.recording:
+            return
+        if self.recording and self.record_count < self.RECORD_FRAMES:
+            self.record_count = self.record_count + 1
+        elif self.recording and self.record_count == self.RECORD_FRAMES:
+            self.thread_pool.submit(self.save_record)
+            self.recording = False
+
+    def start_vi_record(self):
+        command = f"ffmpeg -i rtsp://192.168.0.1/mjpg/ch1 -vframes 40 -y {self.video_vi_path}sequence-vi-%04d.png" 
+        # command = r"ffmpeg -i rtsp://192.168.0.1/mjpg/ch1 -vframes 40 -y " + self.video_vi_path + "sequence-vi-%04d.png" 
+        print(command)
+        subprocess.call(command)
+        print('VI image sequence saved at ' + self.video_vi_path)
+        self.write_to_textbrowser('VI image sequence saved at ' + self.video_vi_path)
     
     def control_record(self):
         if not self.recording:
             print('start recording')
             self.write_to_textbrowser("start recording")
+            self.pushButton_13.setText("wait")
+            
+            path = self.video_save_path + str(self.record_index) + '/'
+            while os.path.exists(path):
+                self.record_index = self.record_index + 1
+                path = self.video_save_path + str(self.record_index) + '/'
+            if not os.path.exists(path):
+                os.makedirs(path)
+            self.video_ir_path = path + 'IR/'
+            if not os.path.exists(self.video_ir_path):
+                os.makedirs(self.video_ir_path)
+            self.video_vi_path = path + 'VI/'
+            if not os.path.exists(self.video_vi_path):
+                os.makedirs(self.video_vi_path)
+                
             self.recording = True
-            self.pushButton_13.setText("finish")
+            self.thread_pool.submit(self.start_vi_record)
             
         elif self.recording:
-            self.thread_pool.submit(self.save_record)
-            self.recording = False
-            self.pushButton_13.setText("record")
+            print('recording is already started')
+            self.write_to_textbrowser("recording is already started")
+            return
     
     def control_exit(self):
         if self.streaming:
@@ -367,8 +399,6 @@ class MyMainForm(QMainWindow, Ui_Form):
             self.set_node('FocusDirection', 'Stop')
             self.focus_count = 0
             self.focusing = False
-            # print('done... ', end='')
-            # self.write_to_textbrowser('done')
             self.read_distance()
             
     def focus_further(self):
