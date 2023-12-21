@@ -24,7 +24,7 @@ use `FLIR ipconfig3` to configure ip settings
 if you have any trouble, try `AdapterConfigGUI` and `SpinView` to fix, which are installed along with spinnaker3.1  
 
 #### run in python
-change the rtps adress in run_demo.py  
+change the rtsp adress in run_demo.py  
 the default adress is rtsp://192.168.0.1/mjpg/ch1  
 `python run_demo.py`  
 
