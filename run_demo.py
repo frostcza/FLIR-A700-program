@@ -56,7 +56,7 @@ class MyMainForm(QMainWindow, Ui_Form):
 
         self.recording = False
         self.record_count = 0
-        self.RECORD_FRAMES = 100
+        self.RECORD_FRAMES = 300
         self.record_list = []
         self.record_index = 1
         self.video_save_path = './video/'
@@ -263,7 +263,7 @@ class MyMainForm(QMainWindow, Ui_Form):
             
         self.processor = PySpin.ImageProcessor()
         self.processor.SetColorProcessing(PySpin.SPINNAKER_COLOR_PROCESSING_ALGORITHM_NONE)
-        self.timer.start(40)
+        self.timer.start(33.3)
 
     
     def control_stop(self):
@@ -333,8 +333,8 @@ class MyMainForm(QMainWindow, Ui_Form):
             self.recording = False
 
     def start_vi_record(self):
-        command = f"ffmpeg -i rtsp://192.168.0.1/mjpg/ch1 -vframes 40 -y {self.video_vi_path}sequence-vi-%04d.png" 
-        # command = r"ffmpeg -i rtsp://192.168.0.1/mjpg/ch1 -vframes 40 -y " + self.video_vi_path + "sequence-vi-%04d.png" 
+        command = f"ffmpeg -i rtsp://192.168.0.1/mjpg/ch1 -vf fps=30 -vframes 300 -y {self.video_vi_path}sequence-vi-%04d.png"
+        # command = f"ffmpeg -rtsp_transport tcp -i rtsp://192.168.0.1/mjpg/ch1 -vf fps=25 -vframes 300 -y {self.video_vi_path}sequence-vi-%04d.png"
         print(command)
         subprocess.call(command)
         print('VI image sequence saved at ' + self.video_vi_path)
@@ -385,7 +385,13 @@ class MyMainForm(QMainWindow, Ui_Form):
         
     def read_distance(self):
         node = PySpin.CFloatPtr(self.nodemap.GetNode("FocusDistance"))
-        self.distance = node.GetValue()
+        try:    
+            self.distance = node.GetValue()
+        except PySpin.SpinnakerException as ex:
+            print('Error: %s' % ex)
+            self.write_to_textbrowser('focus distance is not readable now, please retry')
+            return
+        
         print(self.distance)
         self.write_to_textbrowser('done... now focus distance = ' + str(round(self.distance, 2)))
         self.FOCUS_STEP = int(4.0 / self.distance) + 1
